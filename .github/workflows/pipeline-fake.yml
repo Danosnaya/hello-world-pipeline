@@ -10,6 +10,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm test
+
+  build-fake:
+    runs-on: ubuntu-latest
     env:
       IMAGE_NAME: gcr.io/${{ secrets.PROJECT_ID }}/${{ github.repository }}:${{ github.sha  }}
     steps:
@@ -17,3 +27,13 @@ jobs:
       - run: echo "Build and push Docker image to container registry"
       - run: echo ${{ github.repository }}
       - run: echo $IMAGE_NAME
+
+  deploy-stage-fake:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploy to staging environment"
+
+  deploy-prod-fake:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploy to Production environment"
