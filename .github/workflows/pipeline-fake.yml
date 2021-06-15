@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: echo "Build and push Docker image to container registry"
-      - run: IMAGE_NAME=gcr.io/${{ secrets.PROJECT_ID }}/hello:${{ github.sha  }}
-      - run: echo "hello"
-      - run: echo "${IMAGE_NAME}"
+      - run: IMAGE_NAME=gcr.io/${{ secrets.PROJECT_ID }}/${{ github.repository }}:${{ github.sha  }}
+      - run: echo ${{ github.repository }}
+      - run: echo ${IMAGE_NAME}
