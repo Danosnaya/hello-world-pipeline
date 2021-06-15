@@ -15,4 +15,4 @@ jobs:
       - run: echo "Build and push Docker image to container registry"
       - run: IMAGE_NAME=gcr.io/${{ secrets.PROJECT_ID }}/${{ github.repository }}:${{ github.sha  }}
       - run: echo ${{ github.repository }}
-      - run: echo ${IMAGE_NAME}
+      - run: echo $IMAGE_NAME
