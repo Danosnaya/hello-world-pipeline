@@ -20,6 +20,7 @@ jobs:
 
   build-fake:
     runs-on: ubuntu-latest
+    needs: [test]
     env:
       IMAGE_NAME: gcr.io/${{ secrets.PROJECT_ID }}/${{ github.repository }}:${{ github.sha  }}
     steps:
@@ -30,10 +31,12 @@ jobs:
 
   deploy-stage-fake:
     runs-on: ubuntu-latest
+    needs: [build-fake]
     steps:
       - run: echo "Deploy to staging environment"
 
   deploy-prod-fake:
     runs-on: ubuntu-latest
+    needs: [build-fake]
     steps:
       - run: echo "Deploy to Production environment"
