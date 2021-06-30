@@ -31,9 +31,22 @@ jobs:
           name: sast-scan-reports
           path: reports
 
-  build:
+  sonar:
     runs-on: ubuntu-latest
     needs: [test]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GIT }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [sonar]
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v2
@@ -60,27 +73,27 @@ jobs:
           docker push \
             "gcr.io/${{ secrets.PROJECT_ID }}/hello:${{ github.sha }}"
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [build]
-    env:
-      IMAGE_NAME: gcr.io/${{ secrets.PROJECT_ID }}/hello:${{ github.sha  }}
-      PORT: 3000
-    steps:
-      - name: Check Out
-        uses: actions/checkout@v2
-
-        # Setup gcloud CLI
-      - uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.GKE_SA_KEY_DEC }}
-          service_account_email: ${{ secrets.GKE_EMAIL }}
-          project_id: ${{ secrets.PROJECT_ID }}
-
-      - name: Create cluster
-      #  run: gcloud run deploy ${{ secrets.PROJECT_ID }} --image $IMAGE_NAME --port $PORT --platform managed --region us-central1
-      #          gcloud container clusters create cluster-for-simple-app --zone=us-east1-c --project=${{ secrets.PROJECT_ID }}
-        run: |-
-          gcloud container clusters get-credentials cluster-for-simple-app --zone=us-east1-c
-          sed -i "s|{{ image }}|gcr.io/${{ secrets.PROJECT_ID }}/hello:${{ github.sha  }}|g" deployment.yml
-          kubectl apply -f deployment.yml
+#  deploy:
+#    runs-on: ubuntu-latest
+#    needs: [build]
+#    env:
+#      IMAGE_NAME: gcr.io/${{ secrets.PROJECT_ID }}/hello:${{ github.sha  }}
+#      PORT: 3000
+#    steps:
+#      - name: Check Out
+#        uses: actions/checkout@v2
+#
+#        # Setup gcloud CLI
+#      - uses: google-github-actions/setup-gcloud@v0.2.0
+#        with:
+#          service_account_key: ${{ secrets.GKE_SA_KEY_DEC }}
+#          service_account_email: ${{ secrets.GKE_EMAIL }}
+#          project_id: ${{ secrets.PROJECT_ID }}
+#
+#      - name: Create cluster
+#      #  run: gcloud run deploy ${{ secrets.PROJECT_ID }} --image $IMAGE_NAME --port $PORT --platform managed --region us-central1
+#      #          gcloud container clusters create cluster-for-simple-app --zone=us-east1-c --project=${{ secrets.PROJECT_ID }}
+#        run: |-
+#          gcloud container clusters get-credentials cluster-for-simple-app --zone=us-east1-c
+#          sed -i "s|{{ image }}|gcr.io/${{ secrets.PROJECT_ID }}/hello:${{ github.sha  }}|g" deployment.yml
+#          kubectl apply -f deployment.yml
